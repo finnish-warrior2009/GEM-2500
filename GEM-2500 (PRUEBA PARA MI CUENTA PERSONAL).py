@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands 
+import os
 
 #DATOS ACTUALIZADOS DE MIGRANTES EN CHILE:
 
@@ -61,7 +62,7 @@ async def on_ready():
 @bot.command(name="ayuda")
 async def mostrar_ayuda(ctx):
     ayuda_embed = discord.Embed(
-        title="🇨🇱 Comandos disponibles",
+        title=" Comandos disponibles",
         description="Lista de comandos para consultar datos sobre la migración en Chile",
         color=discord.Color.green()
     )
@@ -145,4 +146,5 @@ async def cmd_menor_migrantes(ctx):
     await ctx.send(f"📉 El grupo de migrantes menos numeroso en Chile son los **{pais.capitalize()}**, con aproximadamente **{cantidad:,}** personas.")
 
 #EJECUTAR EL BOT
-bot.run("MTQyNzM4NTE4NTQ0NzcwNjc0NA.GxPm2q.A4OyDT_n1rV409MFI6uRJgs6Qg2QWXXc5OqNzs")
+
+bot.run(os.getenv("DISCORD_TOKEN"))
