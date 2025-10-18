@@ -46,6 +46,13 @@ migrantes_origenes = {
 
 }
 
+votantes_origenes = {
+    "venezolanos": 237889,
+    "peruanos": 193883,
+    "colombianos": 103239,
+    "migrantes": 886190
+}
+
 #CONFIGURACIÓN DEL BOT
 
 #COMANDO PARA EL NÚMERO DE MIGRANTES ENTRE 2022 Y 2025
@@ -145,6 +152,22 @@ async def cmd_menor_migrantes(ctx):
     pais, cantidad = menor
     await ctx.send(f"📉 El grupo de migrantes menos numeroso en Chile son los **{pais.capitalize()}**, con aproximadamente **{cantidad:,}** personas.")
 
+#VOTANTES MIGRANTES
+
+@bot.command(name="votantes")
+async def cmd_votantes(ctx, *, pais: str = None):
+    if pais:
+        pais_key = pais.lower().strip()
+        if pais_key in votantes_origenes:
+            cantidad = votantes_origenes[pais_key]
+            await ctx.send(f"🗳️ Hay aproximadamente **{cantidad:,}** votantes **{pais_key.title()}** habilitados para votar en Chile.")
+        else:
+            await ctx.send(f"⚠️ No tengo datos sobre votantes **{pais.title()}**.")
+    else:
+        cantidad_total = votantes_origenes["migrantes"]
+        await ctx.send(f"🌍 En total, hay aproximadamente **{cantidad_total:,}** migrantes habilitados para votar en Chile.")
+
 #EJECUTAR EL BOT
 
 bot.run(os.getenv("DISCORD_TOKEN"))
+
