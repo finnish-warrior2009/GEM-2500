@@ -1,6 +1,23 @@
 import discord
 from discord.ext import commands 
 import os
+from flask import Flask
+from threading import Thread
+
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Your Bot Is Ready"
+
+def run():
+    app.run(host="0.0.0.0", port=8000)
+
+def keep_alive():
+    server = Thread(target=run)
+    server.start()
+
+
 
 #DATOS ACTUALIZADOS DE MIGRANTES EN CHILE:
 
@@ -53,12 +70,15 @@ votantes_origenes = {
     "migrantes": 886190
 }
 
+
 #CONFIGURACIÓN DEL BOT
 
 #COMANDO PARA EL NÚMERO DE MIGRANTES ENTRE 2022 Y 2025
 
 intents = discord.Intents.default()
 intents.message_content = True 
+
+keep_alive()
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -79,8 +99,9 @@ async def mostrar_ayuda(ctx):
     ayuda_embed.add_field(name="!top10", value="Muestra el top 10 de nacionalidades con más migrantes en Chile.", inline=False)
     ayuda_embed.add_field(name="!less10", value="Muestra el top 10 de nacionalidades con menos migrantes en Chile.", inline=False)
     ayuda_embed.add_field(name="!mayor_migrantes", value="Muestra la nacionalidad con más migrantes en Chile.", inline=False)
-    ayuda_embed.add_field(name="!menor_migrantes", value="Muestra la nacionalidad con menos migrantes en Chile.", inline=False)
-    ayuda_embed.set_footer(text="Datos de Instituto Nacional de Estadísticas (INE), Servicio Nacional de Migraciones (SERMIG) y Departamento de Extranjería y Migración (DEM) - Actualizado 2024") 
+    ayuda_embed.add_field(name="!menor_migrantes", value="Muestra la nacionalidad con menos migrantes en Chile. Ejemplo: \"!votantes peruanos.\"", inline=False)
+    ayuda_embed.add_field(name="!votantes", value="Muestra el número total de migrantes habilitados para votar en Chile.")
+    ayuda_embed.set_footer(text="Datos de Instituto Nacional de Estadísticas (INE), Servicio Nacional de Migraciones (SERMIG), Servicio Electoral de Chile (SERVEL) y Departamento de Extranjería y Migración (DEM) - Actualizado 2024") 
     await ctx.send(embed=ayuda_embed)
                           
 
@@ -152,22 +173,25 @@ async def cmd_menor_migrantes(ctx):
     pais, cantidad = menor
     await ctx.send(f"📉 El grupo de migrantes menos numeroso en Chile son los **{pais.capitalize()}**, con aproximadamente **{cantidad:,}** personas.")
 
-#VOTANTES MIGRANTES
-
 @bot.command(name="votantes")
-async def cmd_votantes(ctx, *, pais: str = None):
-    if pais:
-        pais_key = pais.lower().strip()
-        if pais_key in votantes_origenes:
-            cantidad = votantes_origenes[pais_key]
-            await ctx.send(f"🗳️ Hay aproximadamente **{cantidad:,}** votantes **{pais_key.title()}** habilitados para votar en Chile.")
-        else:
-            await ctx.send(f"⚠️ No tengo datos sobre votantes **{pais.title()}**.")
-    else:
+async def cmd_votantes(ctx, *, pais: str = ""):
+    pais_key = pais.lower().strip()
+
+    if not pais_key:
         cantidad_total = votantes_origenes["migrantes"]
         await ctx.send(f"🌍 En total, hay aproximadamente **{cantidad_total:,}** migrantes habilitados para votar en Chile.")
+        return
+
+    if pais_key in votantes_origenes:
+        cantidad = votantes_origenes[pais_key]
+        await ctx.send(f"🗳️ Hay aproximadamente **{cantidad:,}** votantes **{pais_key.title()}** habilitados para votar en Chile.\n"
+                      f"_Fuente: Servicio Electoral de Chile (SERVEL) - 2025_")
+    else:
+        await ctx.send(f"⚠️ No tengo datos sobre votantes **{pais.title()}**.")
 
 #EJECUTAR EL BOT
 
-bot.run(os.getenv("DISCORD_TOKEN"))
-
+token = os.getenv("DISCORD_TOKEN")
+if token is None:
+    raise ValueError("DISCORD_TOKEN no está configurado. Por favor, agrega tu token de Discord en los secretos de Replit.")
+bot.run(token)
